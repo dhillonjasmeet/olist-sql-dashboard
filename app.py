@@ -10,6 +10,7 @@ from pathlib import Path
 from datetime import date
 
 DATA_DIR = Path(__file__).resolve().parent / "data"
+SQL_DIR = Path(__file__).resolve().parent / "sql"
 
 
 def csv_to_table_name(csv_path: Path) -> str:
@@ -34,42 +35,13 @@ def load_data_into_duckdb():
     return con
 
 
-SALES_ENGINE_SQL = """
-WITH total_products AS (
-    SELECT
-        p.product_id,
-        COALESCE(pc.product_category_name_english, p.product_category_name) AS product_category
-    FROM products AS p
-    LEFT JOIN product_category_name_translation AS pc
-        ON p.product_category_name = pc.product_category_name
-),
+def _load_sql(name: str) -> str:
+    """Load SQL from sql/<name>.sql for clarity and reuse."""
+    path = SQL_DIR / f"{name}.sql"
+    return path.read_text(encoding="utf-8").strip().rstrip(";")
 
-total_orders AS (
-    SELECT
-        o.order_id,
-        date_trunc('day', CAST(o.order_purchase_timestamp AS TIMESTAMP)) AS purchase_date,
-        oi.product_id,
-        oi.price,
-        c.customer_state
-    FROM orders AS o
-    LEFT JOIN order_items AS oi
-        ON o.order_id = oi.order_id
-    LEFT JOIN customers AS c
-        ON o.customer_id = c.customer_id
-    WHERE o.order_status = 'delivered'
-)
 
-SELECT
-    t_o.order_id,
-    t_o.purchase_date,
-    t_o.product_id,
-    t_p.product_category,
-    t_o.price,
-    t_o.customer_state
-FROM total_orders AS t_o
-LEFT JOIN total_products AS t_p
-    ON t_o.product_id = t_p.product_id
-"""
+SALES_ENGINE_SQL = _load_sql("sales_engine")
 
 
 def get_sales_data(conn):
@@ -77,106 +49,10 @@ def get_sales_data(conn):
     return conn.execute(SALES_ENGINE_SQL).fetchdf()
 
 
-# View 2: Logistics & Sentiment Engine
-# Your convention: days_late = delivered - estimated (positive = late).
-# Buckets are defined in SQL so recruiters see your logic.
-LOGISTICS_ENGINE_SQL = """
-WITH base AS (
-  SELECT
-    o.order_id,
-    CAST(o.order_delivered_customer_date AS TIMESTAMP)  AS delivered_ts,
-    CAST(o.order_estimated_delivery_date AS TIMESTAMP)  AS estimated_ts,
-    o_r.review_score
-  FROM orders o
-  JOIN order_reviews o_r
-    ON o.order_id = o_r.order_id
-  WHERE o.order_status = 'delivered'
-    AND o.order_delivered_customer_date IS NOT NULL
-    AND o.order_estimated_delivery_date IS NOT NULL
-    AND o_r.review_score IS NOT NULL
-),
-metrics AS (
-  SELECT
-    order_id,
-    delivered_ts,
-    estimated_ts,
-    date_diff('day', estimated_ts, delivered_ts) AS days_late,
-    review_score
-  FROM base
-)
-SELECT
-  CAST(delivered_ts AS DATE) AS delivery_date,
-  days_late,
-  CASE
-    WHEN days_late <= -1 THEN 'Early'
-    WHEN days_late = 0 THEN 'On time'
-    WHEN days_late BETWEEN 1 AND 2 THEN 'Late 1-2 days'
-    WHEN days_late BETWEEN 3 AND 7 THEN 'Late 3-7 days'
-    ELSE 'Late 8+ days'
-  END AS delivery_time,
-  review_score
-FROM metrics
-"""
+LOGISTICS_ENGINE_SQL = _load_sql("logistics_engine")
 
 
-# View 3: Retention & Loyalty Engine (your CLV + repeat behavior query)
-RETENTION_ENGINE_SQL = """
-WITH ORDER_INTERVALS AS (
-    SELECT 
-        c.customer_unique_id,
-        o.order_id,
-        DATE_TRUNC('DAY', o.order_purchase_timestamp) AS order_purchase_date,
-        o.order_status,
-        LAG(DATE_TRUNC('DAY', o.order_purchase_timestamp)) OVER (
-            PARTITION BY c.customer_unique_id
-            ORDER BY DATE_TRUNC('DAY', o.order_purchase_timestamp)
-        ) AS previous_order_date
-    FROM customers AS c
-    JOIN orders AS o
-        ON c.customer_id = o.customer_id
-    WHERE o.order_status = 'delivered'
-),
-
-TIME_DIFFS AS (
-    SELECT 
-        customer_unique_id,
-        date_diff('DAY', previous_order_date, order_purchase_date) AS days_between
-    FROM ORDER_INTERVALS
-    WHERE previous_order_date IS NOT NULL  
-),
-
-ORDER_PAYMENTS_AGG AS (
-    SELECT
-        op.order_id,
-        SUM(op.payment_value) AS order_revenue
-    FROM order_payments AS op
-    GROUP BY op.order_id
-)
-
-SELECT 
-    c.customer_unique_id, 
-    MIN(DATE_TRUNC('DAY', o.order_purchase_timestamp)) AS first_order_date,
-    MAX(DATE_TRUNC('DAY', o.order_purchase_timestamp)) AS last_order_date,
-    date_diff(
-        'DAY', 
-        MIN(DATE_TRUNC('DAY', o.order_purchase_timestamp)),
-        MAX(DATE_TRUNC('DAY', o.order_purchase_timestamp))
-    ) AS tenure_days,
-    COUNT(DISTINCT o.order_id) AS total_orders,
-    SUM(opa.order_revenue) AS total_spent,
-    ROUND(AVG(td.days_between), 1) AS avg_days_between_orders
-FROM customers AS c
-JOIN orders AS o
-    ON c.customer_id = o.customer_id
-JOIN ORDER_PAYMENTS_AGG AS opa
-    ON o.order_id = opa.order_id
-LEFT JOIN TIME_DIFFS AS td 
-    ON c.customer_unique_id = td.customer_unique_id
-WHERE o.order_status = 'delivered'
-GROUP BY c.customer_unique_id
-HAVING COUNT(DISTINCT o.order_id) > 1
-ORDER BY total_spent DESC
-"""
+RETENTION_ENGINE_SQL = _load_sql("retention_engine")
 
 
 def main():

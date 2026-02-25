@@ -50,6 +50,20 @@ Then open the local URL that Streamlit prints (usually `http://localhost:8501`).
 
 ---
 
+## Where to Find the SQL
+
+The SQL for each analytics engine lives in the **`sql/`** folder so the logic is easy to find and reuse:
+
+| Engine | File |
+|--------|------|
+| Sales & Profit | [sql/sales_engine.sql](sql/sales_engine.sql) |
+| Logistics & Sentiment | [sql/logistics_engine.sql](sql/logistics_engine.sql) |
+| Retention & Loyalty | [sql/retention_engine.sql](sql/retention_engine.sql) |
+
+`app.py` loads these files at startup and registers them as DuckDB views. No SQL is hidden in the UI layer.
+
+---
+
 ## Architecture
 
 ### Data loading
