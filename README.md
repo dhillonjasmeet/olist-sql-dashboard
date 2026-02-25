@@ -162,7 +162,13 @@ Do we retain customers, and who are the most valuable loyalists?
 
 ### 4. Raw SQL Lab
 
-Run arbitrary SQL against DuckDB to inspect tables and views (`orders`, `sales_engine`, `logistics_engine`, `retention_engine`, etc.) and explore additional hypotheses.
+A scratchpad to run your own SQL against the same DuckDB instance the dashboard uses.
+
+**Tables** (from the CSVs): `orders`, `order_items`, `order_payments`, `order_reviews`, `customers`, `products`, `product_category_name_translation`, `sellers`, `geolocation`
+
+**Views** (the three engines): `sales_engine`, `logistics_engine`, `retention_engine`
+
+Example: `SELECT * FROM orders LIMIT 10` or `SELECT * FROM sales_engine WHERE customer_state = 'SP' LIMIT 5`
 
 ---
 
@@ -188,10 +194,9 @@ Run arbitrary SQL against DuckDB to inspect tables and views (`orders`, `sales_e
 
 ## Possible Next Steps
 
-- Add cohort retention curves by acquisition month.
-- Add unit economics (e.g. net revenue proxies using freight or category margins).
-- Control the logistics–reviews relationship for geography, category, and seller.
-- Extend to other datasets or domains.
+- **Retention over time:** Track how many customers who first bought in a given month came back in later months (e.g. “Jan 2018 cohort: 20% ordered again within 3 months”).
+- **Profitability:** Use freight and product cost (if available) to show revenue minus costs, not just revenue.
+- **Smarter delivery–review analysis:** Slice the “late delivery → worse reviews” result by state, category, or seller so we know where the problem is worst.
 
 ---
 
