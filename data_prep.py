@@ -33,10 +33,15 @@ orders_path = DATA_DIR / "olist_orders_dataset.csv"
 # read_csv() reads the CSV from disk into a DataFrame (a table in memory). 'orders' is that table.
 orders = pd.read_csv(orders_path)
 
+# --- DATA CONVERSION ---
+# Convert the timestamp column from 'object' (text) to datetime.
+# This ensures .min() and .max() are accurate and any date-based analysis is correct.
+orders["order_purchase_timestamp"] = pd.to_datetime(orders["order_purchase_timestamp"])
+
 # --- PRINT BASIC STATS ---
 # .shape = (number of rows, number of columns). Quick way to see size of the table.
 print("Orders shape:", orders.shape)
-# orders["order_purchase_timestamp"] = one column. .min() and .max() = earliest and latest date in that column.
+# Now that we've converted to datetime, .min() and .max() give the true earliest and latest date.
 print("Date range:", orders["order_purchase_timestamp"].min(), "to", orders["order_purchase_timestamp"].max())
 # value_counts() = how many rows have each value (e.g. delivered: 96478, shipped: 1107, ...). Shows distribution of order status.
 print("\nOrder status counts:")
