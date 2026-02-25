@@ -48,6 +48,8 @@ streamlit run app.py
 
 Then open the local URL that Streamlit prints (usually `http://localhost:8501`).
 
+**Data check script:** To quickly confirm the orders data is present and see its date range and row count, run `python data_prep.py` from the project root. It loads the orders CSV with pandas and prints shape, date range, and order status counts. No dashboard required.
+
 ---
 
 ## Where to Find the SQL
