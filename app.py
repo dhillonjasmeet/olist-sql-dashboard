@@ -9,8 +9,19 @@ import plotly.express as px
 from pathlib import Path
 from datetime import date
 
-DATA_DIR = Path(__file__).resolve().parent / "data"
-SQL_DIR = Path(__file__).resolve().parent / "sql"
+BASE_DIR = Path(__file__).resolve().parent
+DATA_DIR = BASE_DIR / "data"
+DATA_SAMPLE_DIR = BASE_DIR / "data_sample"
+SQL_DIR = BASE_DIR / "sql"
+
+
+def _get_data_dir() -> Path:
+    """Use data/ if it has CSVs (local full data); else data_sample/ (for deployed demo)."""
+    if DATA_DIR.exists() and list(DATA_DIR.glob("*.csv")):
+        return DATA_DIR
+    if DATA_SAMPLE_DIR.exists() and list(DATA_SAMPLE_DIR.glob("*.csv")):
+        return DATA_SAMPLE_DIR
+    return DATA_DIR  # will be empty on first deploy until sample is committed
 
 
 def csv_to_table_name(csv_path: Path) -> str:
@@ -23,9 +34,13 @@ def csv_to_table_name(csv_path: Path) -> str:
 
 @st.cache_resource
 def load_data_into_duckdb():
-    """Load every CSV in DATA_DIR into DuckDB with matching table names."""
+    """Load every CSV from data/ or data_sample/ into DuckDB with matching table names."""
     con = duckdb.connect(":memory:")
-    for csv_path in sorted(DATA_DIR.glob("*.csv")):
+    data_dir = _get_data_dir()
+    csv_files = sorted(data_dir.glob("*.csv"))
+    if not csv_files:
+        return con  # no tables; caller will show friendly message
+    for csv_path in csv_files:
         table_name = csv_to_table_name(csv_path)
         # Use read_csv_auto and register as table
         con.execute(
@@ -58,12 +73,28 @@ RETENTION_ENGINE_SQL = _load_sql("retention_engine")
 def main():
     st.set_page_config(page_title="Olist Data Explorer", layout="wide")
     con = load_data_into_duckdb()
-    # Expose your Sales & Profit Engine as a SQL view for downstream queries
-    con.execute(f"CREATE OR REPLACE VIEW sales_engine AS {SALES_ENGINE_SQL}")
-    # View 2: Logistics & Sentiment Engine
-    con.execute(f"CREATE OR REPLACE VIEW logistics_engine AS {LOGISTICS_ENGINE_SQL}")
-    # View 3: Retention & Loyalty Engine
-    con.execute(f"CREATE OR REPLACE VIEW retention_engine AS {RETENTION_ENGINE_SQL}")
+
+    # Fail fast with a clear message if no data was loaded (e.g. data_sample not in repo on Streamlit Cloud).
+    try:
+        con.execute("SELECT 1 FROM orders LIMIT 1")
+    except Exception:
+        data_dir = _get_data_dir()
+        csv_count = len(list(data_dir.glob("*.csv"))) if data_dir.exists() else 0
+        st.error(
+            "**No data loaded.** The app needs CSV files in **data/** (local) or **data_sample/** (deployed). "
+            f"Checked: `{data_dir.name}` exists={data_dir.exists()}, CSV count={csv_count}. "
+            "**On Streamlit Cloud:** Confirm on GitHub that the **data_sample** folder exists and contains **9 CSV files**. "
+            "If it is missing, run locally: `python scripts/create_sample_data.py`, then `git add data_sample/`, `git commit -m \"Add data_sample\"`, `git push`. Then reboot the app."
+        )
+        st.stop()
+
+    try:
+        con.execute(f"CREATE OR REPLACE VIEW sales_engine AS {SALES_ENGINE_SQL}")
+        con.execute(f"CREATE OR REPLACE VIEW logistics_engine AS {LOGISTICS_ENGINE_SQL}")
+        con.execute(f"CREATE OR REPLACE VIEW retention_engine AS {RETENTION_ENGINE_SQL}")
+    except Exception:
+        st.error("Data loaded but view creation failed. Check app logs.")
+        st.stop()
 
     st.sidebar.title("Olist Explorer")
     page = st.sidebar.radio(
