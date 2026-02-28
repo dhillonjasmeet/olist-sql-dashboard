@@ -9,3 +9,8 @@ __pycache__/
 
 # Data (keep CSVs local; download from Kaggle)
 data/*.csv
+
+# Personal reference (not for public repo)
+PROJECT_WALKTHROUGH.md
+HOW_TO_TALK_ABOUT_THIS.md
+data_prep_NOTES.py
