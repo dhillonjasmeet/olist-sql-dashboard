@@ -28,7 +28,8 @@ def csv_to_table_name(csv_path: Path) -> str:
     """Map CSV filename to DuckDB table name (e.g. olist_orders_dataset.csv -> orders)."""
     name = csv_path.stem.lower()
     if name.startswith("olist_") and name.endswith("_dataset"):
-        return name[6:-8]  # strip 'olist_' and '_dataset'
+        t = name[6:-8]  # strip 'olist_' and '_dataset'
+        return t.rstrip("_") if t.endswith("_") else t  # "orders_" -> "orders"
     return name.replace("-", "_")
 
 

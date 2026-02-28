@@ -1,107 +1,96 @@
 # Deploy the dashboard so recruiters can open it with one link
 
-Follow these steps once. After that, you’ll have a public URL (e.g. `https://your-app.streamlit.app`) that recruiters can open without running any code.
+One path only. The deployed app will show a **subset of your real data** (same as local, smaller). Recruiters get a URL—no code to run.
 
 ---
 
-## Step 1: Create sample data (on your machine)
+## What you need
 
-You need a small copy of the dataset in the repo so the app can run on Streamlit’s servers (they don’t have your full `data/` folder).
-
-**Option A – You have the full Olist dataset in `data/`**  
-Run:
-```bash
-python scripts/create_sample_data.py
-```
-This keeps referential integrity and ensures enough repeat customers so **Retention & Loyalty** has data.
-
-**Option B – You don’t have full data, or Retention & Loyalty is still empty**  
-Run:
-```bash
-python scripts/create_seed_data.py
-```
-This generates a minimal referentially consistent sample (including repeat customers) so all three sections—Sales, Logistics, and **Retention & Loyalty**—have data.
-
-3. Check that the **`data_sample`** folder exists and contains 9 CSV files.
+- The **full Olist dataset** in `data/` on your machine (same CSVs you use when you run the app locally).
+- A **GitHub** account and a repo for this project.
+- A **Streamlit Community Cloud** account (free, sign in with GitHub).
 
 ---
 
-## Step 2: Commit and push the sample data and app
+## Step 1: Build the sample from your real data (on your machine)
 
-1. In the project folder, run:
+1. Put all Olist CSVs in **`data/`** (e.g. `olist_orders_dataset.csv`, `olist_customers_dataset.csv`, etc.).
+2. In the project folder, run:
    ```bash
-   git add data_sample/ app.py scripts/
-   git status
+   python scripts/create_sample_data.py
    ```
-   You should see `data_sample/` with the new CSVs and any changed files.
+3. You should see:
+   - Lines like `olist_orders_dataset.csv: … rows` for each file.
+   - **Verified: Retention & Loyalty has … rows.**
+   - **Next: git add data_sample/ …**
+4. If you see **ERROR** or **Verification failed**, fix the issue (usually: use the full dataset in `data/`) and run the script again. Do **not** push until the script finishes successfully.
 
-2. Commit and push:
+This creates **`data_sample/`** = a subset of your real data, with correct links between tables and enough repeat customers so Retention & Loyalty works.
+
+---
+
+## Step 2: Commit and push the sample
+
+1. Add and commit the sample (and any app/script changes):
    ```bash
-   git commit -m "Add data_sample for Streamlit Cloud demo"
+   git add data_sample/ app.py scripts/ requirements.txt
+   git status
+   git commit -m "Add data_sample for Streamlit Cloud"
    git push
    ```
-3. On GitHub, confirm that the **`data_sample`** folder and the CSVs inside it are in the repo (and that `data/` is still empty there, which is correct).
+2. On GitHub, open your repo and confirm the **`data_sample`** folder is there and contains **9 CSV files**. The **`data/`** folder will not be in the repo (it’s gitignored)—that’s correct.
 
 ---
 
 ## Step 3: Deploy on Streamlit Community Cloud
 
-1. Go to **https://share.streamlit.io** in your browser.
-2. Sign in with **GitHub** (authorize Streamlit if asked).
-3. Click **“New app”**.
-4. Fill in:
-   - **Repository:** `YourUsername/olist-sql-dashboard` (your GitHub repo).
-   - **Branch:** `main`.
-   - **Main file path:** `app.py`.
-   - **App URL:** pick a short name (e.g. `olist-sql-dashboard`). You’ll get `https://olist-sql-dashboard.streamlit.app` (or similar).
-5. Click **“Deploy!”**.
-6. Wait a few minutes. The first run can take 2–5 minutes while it installs dependencies and loads the sample data.
-7. When it’s done, you’ll see the dashboard. Copy the **URL** from the browser (e.g. `https://your-app-name.streamlit.app`).
+1. Go to **https://share.streamlit.io** and sign in with GitHub.
+2. Click **New app**.
+3. Set:
+   - **Repository:** `YourUsername/your-repo-name`
+   - **Branch:** `main` (or your default branch)
+   - **Main file path:** `app.py`
+   - **App URL:** e.g. `olist-sql-dashboard`
+4. Click **Deploy**.
+5. Wait a few minutes. When it’s ready, copy the app URL (e.g. `https://olist-sql-dashboard.streamlit.app`).
 
 ---
 
-## Step 4: Put the link in your README
+## Step 4: Share the link
 
-1. Open **README.md** in your project.
-2. Near the top (e.g. right under the title or the first paragraph), add a line like:
+1. In your **README.md**, add near the top:
    ```markdown
-   **Live dashboard:** [Open the app](https://your-app-name.streamlit.app)
+   **Live dashboard:** [Open the app](https://your-app-url.streamlit.app)
    ```
-   Replace `https://your-app-name.streamlit.app` with the URL you copied.
-3. Save, then commit and push:
+2. Commit and push:
    ```bash
    git add README.md
-   git commit -m "Add live dashboard link to README"
+   git commit -m "Add live dashboard link"
    git push
    ```
 
-Recruiters can then open your repo, see the link, and click it to view the dashboard without running any code.
+Recruiters can open the repo, see the link, and view the dashboard with no setup.
 
 ---
 
 ## If something goes wrong
 
-- **“No data loaded” on the live app**  
-  Make sure **Step 1 and Step 2** are done and that **`data_sample`** (and the CSVs inside it) are in the repo and pushed. Then in Streamlit Cloud, open your app, click **“Manage app”** (bottom right), and **“Reboot app”**.
-
-- **App won’t start / build error**  
-  In Streamlit Cloud, click **“Manage app”** and check the **Logs** for the exact error. Often it’s a missing dependency: add it to **requirements.txt**, commit, push, and the app will rebuild.
-
-- **Charts are empty or look odd**  
-  The live app uses the **sample** data (subset). For full data, run the app locally with your full `data/` folder.
-
-- **Retention & Loyalty shows “No retention data available”**  
-  The sample in the repo has no repeat customers (or broken links between orders and payments). Regenerate the sample: run `python scripts/create_seed_data.py` (no full dataset needed), then `git add data_sample/`, commit, push, and reboot the app on Streamlit Cloud.
+| Problem | What to do |
+|--------|------------|
+| **“No data loaded”** on the live app | Ensure **`data_sample/`** (with 9 CSVs) is in the repo and pushed. Then: Streamlit Cloud → your app → **Manage app** → **Reboot app**. |
+| **Retention & Loyalty shows “No retention data available”** | Regenerate the sample: run `python scripts/create_sample_data.py` again (with full data in `data/`). Make sure the script prints **Verified: Retention & Loyalty has … rows.** Then `git add data_sample/`, commit, push, and reboot the app. |
+| **Deployed report looks wrong / not like local** | The repo must use a sample **from your real data**. Do not use any other sample or fake data. Put the full Olist CSVs in `data/`, run `python scripts/create_sample_data.py`, then commit and push `data_sample/` and reboot. |
+| **Build error / app won’t start** | In Streamlit Cloud, open **Manage app** → **Logs**. Fix the error (often a missing dependency: add it to **requirements.txt**, commit, push). |
 
 ---
 
 ## Summary
 
-| Step | What you do |
-|------|-------------|
-| 1 | Run `python scripts/create_sample_data.py` (full data in `data/`) or `python scripts/create_seed_data.py` (no full data) to create `data_sample/`. |
-| 2 | `git add data_sample/ app.py scripts/`, commit, push. |
-| 3 | On share.streamlit.io, New app → pick repo, branch, `app.py` → Deploy. |
-| 4 | Copy the app URL, add it to the README, commit and push. |
+| Step | Action |
+|------|--------|
+| 1 | Full Olist CSVs in `data/` → run `python scripts/create_sample_data.py` until it shows **Verified**. |
+| 2 | `git add data_sample/ …` → commit → push. |
+| 3 | share.streamlit.io → New app → repo, branch, `app.py` → Deploy. |
+| 4 | Add the app URL to README, commit, push. |
 
-After that, recruiters can use the link in your README to open the dashboard in one click.
+After that, your live report is a subset of your real data, and recruiters can open it with one link.
