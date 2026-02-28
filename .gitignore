@@ -7,8 +7,8 @@ __pycache__/
 # Streamlit
 .streamlit/
 
-# Data (keep CSVs local; download from Kaggle)
-data/*.csv
+# Unused (deployment now uses data/ only)
+data_sample/
 
 # Personal reference (not for public repo)
 PROJECT_WALKTHROUGH.md

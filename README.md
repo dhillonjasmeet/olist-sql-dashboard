@@ -1,5 +1,7 @@
 # Olist E‑commerce Analytics Dashboard (SQL‑First)
 
+**Live dashboard:** [Open the app](https://olist-sql-dashboard.streamlit.app)
+
 ## Overview
 
 This project is a SQL‑first e‑commerce analytics dashboard built on the public [Olist Brazilian E‑commerce dataset](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce). It is designed to showcase senior‑level SQL modeling, business analytics, and storytelling.
@@ -33,22 +35,26 @@ I built this project to demonstrate that I can:
   - `customers`, `products`, `product_category_name_translation`
   - `sellers`, `geolocation`
 
-> Note: The CSVs themselves are not committed to this repository due to size. You can download them from Kaggle and place them in the `data/` folder.
+> To run locally: download the dataset from Kaggle and place the CSVs in the `data/` folder. To deploy so the live app matches local exactly, commit the `data/` folder to the repo (see **DEPLOY.md**).
 
 ---
 
 ## How to Run
 
-From the project root, run:
+**Option 1 — Live (no setup)**  
+Open the dashboard in your browser: **[https://olist-sql-dashboard.streamlit.app](https://olist-sql-dashboard.streamlit.app)**
+
+**Option 2 — Local**  
+In the folder that contains `app.py`, run:
 
 ```bash
 pip install -r requirements.txt
 streamlit run app.py
 ```
 
-Then open the local URL that Streamlit prints (usually `http://localhost:8501`).
+Then open the URL Streamlit prints (usually `http://localhost:8501`).
 
-**Data check script:** To quickly confirm the orders data is present and see its date range and row count, run `python data_prep.py` from the project root. It loads the orders CSV with pandas and prints shape, date range, and order status counts. No dashboard required.
+**Data check script:** From the same folder, run `python data_prep.py` to confirm the orders data is present and see its date range and row count. No dashboard required.
 
 ---
 

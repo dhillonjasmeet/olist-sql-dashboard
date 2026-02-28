@@ -1,66 +1,67 @@
 # Deploy the dashboard so recruiters can open it with one link
 
-One path only. The deployed app will show a **subset of your real data** (same as local, smaller). Recruiters get a URL—no code to run.
+**Goal:** The live app shows the **same data** as your local app. No sampling, no separate folder—the app reads from **`data/`** on both your machine and on Streamlit Cloud.
+
+---
+
+## How it works
+
+- **Local:** You run the app with your Olist CSVs in **`data/`**. The app loads from `data/`.
+- **Cloud:** You put those same CSVs in **`data/`** and **commit** that folder to your GitHub repo. Streamlit Cloud runs the app from the repo, so it loads the same **`data/`** folder. Same files = same report.
+
+The project is set up so **`data/`** is no longer ignored. When you add and push **`data/`**, the CSV files go to GitHub and the live app uses them.
 
 ---
 
 ## What you need
 
-- The **full Olist dataset** in `data/` on your machine (same CSVs you use when you run the app locally).
-- A **GitHub** account and a repo for this project.
-- A **Streamlit Community Cloud** account (free, sign in with GitHub).
+- Your Olist CSVs in **`data/`** (the same ones you use locally).
+- A GitHub repo for this project.
+- A Streamlit Community Cloud account (free; sign in with GitHub).
 
 ---
 
-## Step 1: Build the sample from your real data (on your machine)
+## Step 1: Commit your data folder
 
-1. Put all Olist CSVs in **`data/`** (e.g. `olist_orders_dataset.csv`, `olist_customers_dataset.csv`, etc.).
+1. Put all your Olist CSVs in **`data/`** (same as when you run the app locally).
 2. In the project folder, run:
    ```bash
-   python scripts/create_sample_data.py
-   ```
-3. You should see:
-   - Lines like `olist_orders_dataset.csv: … rows` for each file.
-   - **Verified: Retention & Loyalty has … rows.**
-   - **Next: git add data_sample/ …**
-4. If you see **ERROR** or **Verification failed**, fix the issue (usually: use the full dataset in `data/`) and run the script again. Do **not** push until the script finishes successfully.
-
-This creates **`data_sample/`** = a subset of your real data, with correct links between tables and enough repeat customers so Retention & Loyalty works.
-
----
-
-## Step 2: Commit and push the sample
-
-1. Add and commit the sample (and any app/script changes):
-   ```bash
-   git add data_sample/ app.py scripts/ requirements.txt
+   git add data/
    git status
-   git commit -m "Add data_sample for Streamlit Cloud"
+   ```
+   You should see the CSV files under `data/` listed.
+3. Commit and push:
+   ```bash
+   git commit -m "Add data for Streamlit Cloud so live app matches local"
    git push
    ```
-2. On GitHub, open your repo and confirm the **`data_sample`** folder is there and contains **9 CSV files**. The **`data/`** folder will not be in the repo (it’s gitignored)—that’s correct.
+4. On GitHub, open your repo and confirm the **`data`** folder is there and contains your CSV files.
+
+**Note:** The Olist dataset is typically tens of megabytes. GitHub allows it; if you hit size limits, see the troubleshooting section below.
 
 ---
 
-## Step 3: Deploy on Streamlit Community Cloud
+## Step 2: Deploy on Streamlit Community Cloud
 
 1. Go to **https://share.streamlit.io** and sign in with GitHub.
 2. Click **New app**.
 3. Set:
-   - **Repository:** `YourUsername/your-repo-name`
+   - **Repository:** your GitHub repo (e.g. `YourUsername/sql_portfolio`)
    - **Branch:** `main` (or your default branch)
    - **Main file path:** `app.py`
-   - **App URL:** e.g. `olist-sql-dashboard`
+   - **App URL:** e.g. `olist-dashboard`
 4. Click **Deploy**.
-5. Wait a few minutes. When it’s ready, copy the app URL (e.g. `https://olist-sql-dashboard.streamlit.app`).
+5. Wait a few minutes. When it’s ready, copy the app URL.
+
+The app will load **`data/`** from the repo, so the report will match what you see locally.
 
 ---
 
-## Step 4: Share the link
+## Step 3: Share the link
 
-1. In your **README.md**, add near the top:
+1. In **README.md**, add near the top:
    ```markdown
-   **Live dashboard:** [Open the app](https://your-app-url.streamlit.app)
+   **Live dashboard:** [Open the app](https://olist-sql-dashboard.streamlit.app)
    ```
 2. Commit and push:
    ```bash
@@ -69,7 +70,7 @@ This creates **`data_sample/`** = a subset of your real data, with correct links
    git push
    ```
 
-Recruiters can open the repo, see the link, and view the dashboard with no setup.
+Recruiters can open the repo and click the link—no code to run.
 
 ---
 
@@ -77,10 +78,9 @@ Recruiters can open the repo, see the link, and view the dashboard with no setup
 
 | Problem | What to do |
 |--------|------------|
-| **“No data loaded”** on the live app | Ensure **`data_sample/`** (with 9 CSVs) is in the repo and pushed. Then: Streamlit Cloud → your app → **Manage app** → **Reboot app**. |
-| **Retention & Loyalty shows “No retention data available”** | Regenerate the sample: run `python scripts/create_sample_data.py` again (with full data in `data/`). Make sure the script prints **Verified: Retention & Loyalty has … rows.** Then `git add data_sample/`, commit, push, and reboot the app. |
-| **Deployed report looks wrong / not like local** | The repo must use a sample **from your real data**. Do not use any other sample or fake data. Put the full Olist CSVs in `data/`, run `python scripts/create_sample_data.py`, then commit and push `data_sample/` and reboot. |
-| **Build error / app won’t start** | In Streamlit Cloud, open **Manage app** → **Logs**. Fix the error (often a missing dependency: add it to **requirements.txt**, commit, push). |
+| **“No data loaded”** on the live app | Make sure **`data/`** (with your CSVs) is in the repo and pushed. Then: Streamlit Cloud → your app → **Manage app** → **Reboot app**. |
+| **Repo or file too large** | GitHub warns on files over 50MB and blocks over 100MB. If your CSVs are very large, use [Git LFS](https://git-lfs.github.com/) for the data files, or reduce the dataset (e.g. keep one year of orders) and commit that. |
+| **Build error / app won’t start** | In Streamlit Cloud, open **Manage app** → **Logs**. Fix the error (e.g. add missing dependencies to **requirements.txt**, commit, push). |
 
 ---
 
@@ -88,9 +88,8 @@ Recruiters can open the repo, see the link, and view the dashboard with no setup
 
 | Step | Action |
 |------|--------|
-| 1 | Full Olist CSVs in `data/` → run `python scripts/create_sample_data.py` until it shows **Verified**. |
-| 2 | `git add data_sample/ …` → commit → push. |
-| 3 | share.streamlit.io → New app → repo, branch, `app.py` → Deploy. |
-| 4 | Add the app URL to README, commit, push. |
+| 1 | Put Olist CSVs in `data/` → `git add data/` → commit → push. |
+| 2 | share.streamlit.io → New app → your repo, `app.py` → Deploy. |
+| 3 | Add the app URL to README, commit, push. |
 
-After that, your live report is a subset of your real data, and recruiters can open it with one link.
+After that, the live app uses the same **`data/`** as your local app, so the data matches exactly.

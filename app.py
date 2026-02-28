@@ -75,17 +75,17 @@ def main():
     st.set_page_config(page_title="Olist Data Explorer", layout="wide")
     con = load_data_into_duckdb()
 
-    # Fail fast with a clear message if no data was loaded (e.g. data_sample not in repo on Streamlit Cloud).
+    # Fail fast if no data was loaded.
     try:
         con.execute("SELECT 1 FROM orders LIMIT 1")
     except Exception:
         data_dir = _get_data_dir()
         csv_count = len(list(data_dir.glob("*.csv"))) if data_dir.exists() else 0
         st.error(
-            "**No data loaded.** The app needs CSV files in **data/** (local) or **data_sample/** (deployed). "
-            f"Checked: `{data_dir.name}` exists={data_dir.exists()}, CSV count={csv_count}. "
-            "**On Streamlit Cloud:** Confirm on GitHub that the **data_sample** folder exists and contains **9 CSV files**. "
-            "If it is missing, run locally: `python scripts/create_sample_data.py`, then `git add data_sample/`, `git commit -m \"Add data_sample\"`, `git push`. Then reboot the app."
+            "**No data loaded.** The app needs CSV files in the **data/** folder. "
+            f"Checked: `data/` exists={data_dir.exists()}, CSV count={csv_count}. "
+            "**Local:** Put your Olist CSVs in **data/** and run the app again. "
+            "**Streamlit Cloud:** Commit your **data/** folder to the repo (`git add data/`, commit, push), then reboot the app. See DEPLOY.md."
         )
         st.stop()
 
