@@ -85,7 +85,7 @@ def main():
             "**No data loaded.** The app needs CSV files in the **data/** folder. "
             f"Checked: `data/` exists={data_dir.exists()}, CSV count={csv_count}. "
             "**Local:** Put your Olist CSVs in **data/** and run the app again. "
-            "**Streamlit Cloud:** Commit your **data/** folder to the repo (`git add data/`, commit, push), then reboot the app. See DEPLOY.md."
+            "**Streamlit Cloud:** Commit your **data/** folder to the repo (`git add data/`, commit, push), then reboot the app."
         )
         st.stop()
 

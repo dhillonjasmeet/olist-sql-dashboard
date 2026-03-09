@@ -27,6 +27,18 @@ I built this project to demonstrate that I can:
 
 ---
 
+## Hypothesis & Validation
+
+**Hypothesis:** *Late deliveries are associated with lower customer review scores.*
+
+If delivery performance affects customer satisfaction, orders delivered late (vs. on time or early) should show lower average ratings. This is directly testable in the dashboard.
+
+**How to test:** Open the [live dashboard](https://olist-sql-dashboard.streamlit.app) → **Logistics & Sentiment** page. The bar chart compares average review score across delivery buckets (Early, On time, Late 1–2 days, Late 3–7 days, Late 8+ days). Use the delivery date filter to explore different time periods. If the hypothesis holds, later delivery buckets will have lower average scores.
+
+**Finding:** In the Olist data, orders delivered late consistently show lower average review scores than on-time or early deliveries. The relationship strengthens for the latest buckets (e.g. Late 8+ days), suggesting delivery reliability is a lever for improving customer experience and ratings.
+
+---
+
 ## Dataset
 
 - Source: Olist Brazilian E‑commerce Public Dataset
@@ -35,7 +47,7 @@ I built this project to demonstrate that I can:
   - `customers`, `products`, `product_category_name_translation`
   - `sellers`, `geolocation`
 
-> To run locally: download the dataset from Kaggle and place the CSVs in the `data/` folder. To deploy so the live app matches local exactly, commit the `data/` folder to the repo (see **DEPLOY.md**).
+> To run locally: download the dataset from Kaggle and place the CSVs in the `data/` folder. To deploy so the live app matches local exactly, commit the `data/` folder to the repo and deploy via Streamlit Community Cloud.
 
 ---
 
