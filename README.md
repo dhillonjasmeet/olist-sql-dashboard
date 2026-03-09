@@ -37,6 +37,11 @@ If delivery performance affects customer satisfaction, orders delivered late (vs
 
 **Finding:** In the Olist data, orders delivered late consistently show lower average review scores than on-time or early deliveries. The relationship strengthens for the latest buckets (e.g. Late 8+ days), suggesting delivery reliability is a lever for improving customer experience and ratings.
 
+**Secondary hypotheses** (also testable in the dashboard):
+
+- *Revenue is concentrated in a small number of product categories.* → **Executive Summary** → Top 15 Categories bar chart; the top 5 typically drive a large share of total revenue.
+- *Among repeat customers, more frequent buyers tend to spend more.* → **Retention & Loyalty** → Scatter chart (Customer Value vs Repeat Frequency); a negative relationship between avg days between orders and total spent supports this.
+
 ---
 
 ## Dataset
